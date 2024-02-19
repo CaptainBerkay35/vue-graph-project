@@ -1,19 +1,25 @@
 <template>
-  <div class="bg-red-400 w-32 h-32">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <p>deneme</p>
-    
+  <div>
+    <!-- Burada sayfa içeriği yer alabilir -->
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+<script>
+import { mapActions } from 'vuex';
 
-
-@Options({
-  components: {
-    
+export default {
+  name: 'HomeView',
+  mounted() {
+    this.fetchChartData();
   },
-})
-export default class HomeView extends Vue {}
+  methods: {
+    ...mapActions('chartDataModule', ['fetchDataForChart']),
+    fetchChartData() {
+      const marketplace = this.$store.getters['auth/getMarketplace'];
+      const sellerId = this.$store.getters['auth/getSellerId'];
+      this.$store.dispatch('chartDataModule/fetchDataForChart', { marketplace, sellerId });
+    }
+  }
+}
 </script>
+

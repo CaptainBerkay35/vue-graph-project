@@ -64,9 +64,7 @@ export default {
        
           if (response.ApiStatus) {
             const token = this.$store.getters['auth/getToken'];
-            console.log("toktok", token)
             const userInfo = this.$store.getters['auth/getUserInfo'];
-            console.log("User information2:", userInfo);
             this.$router.push('/home');
           } else {
             this.errorMessage = 'Authentication failed';

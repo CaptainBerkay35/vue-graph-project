@@ -1,12 +1,20 @@
-import { Module, VuexModule, Mutation, Action } from "vuex-module-decorators";
+import {
+  Module,
+  VuexModule,
+  Mutation,
+  Action,
+  getModule,
+} from "vuex-module-decorators";
 import axios, { AxiosError } from "axios";
 
 @Module({ namespaced: true })
 export default class AuthModule extends VuexModule {
   token: string | null = null;
   error: any = null;
-  response: any = null; // Yeni eklenen response alanı
-  userInfo: any = null; // Kullanıcı bilgisi için eklenen alan
+  response: any = null;
+  userInfo: any = null;
+  sellerId: string | null = null;
+  marketplace: string | null = null;
 
   get isLoggedIn(): boolean {
     return !!this.token;
@@ -21,12 +29,29 @@ export default class AuthModule extends VuexModule {
   }
 
   get getResponse(): any {
-    // Yeni eklenen getter
     return this.response;
   }
 
   get getUserInfo(): any {
     return this.userInfo;
+  }
+
+  get getMarketplace(): string | null {
+    return this.marketplace;
+  }
+
+  get getSellerId(): string | null {
+    return this.sellerId;
+  }
+
+  @Mutation
+  setSellerId(sellerId: string | null): void {
+    this.sellerId = sellerId;
+  }
+
+  @Mutation
+  setMarketplace(marketplace: string | null): void {
+    this.marketplace = marketplace;
   }
 
   @Mutation
@@ -64,7 +89,10 @@ export default class AuthModule extends VuexModule {
       console.log("Login response:", response);
       this.context.commit("setError", null);
 
-      await this.context.dispatch("fetchUserInfo", { token, email: credentials.Email });
+      await this.context.dispatch("fetchUserInfo", {
+        token,
+        email: credentials.Email,
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
@@ -76,23 +104,36 @@ export default class AuthModule extends VuexModule {
   }
 
   @Action
-async fetchUserInfo({ token, email }: { token: string, email: string }): Promise<void> {
-  try {
-    const response = await axios.post(
-      "https://iapitest.eva.guru/user/user-information",
-      { email }, // Email'i obje olarak post ediyoruz
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  async fetchUserInfo({
+    token,
+    email,
+  }: {
+    token: string;
+    email: string;
+  }): Promise<void> {
+    try {
+      const response = await axios.post(
+        "https://iapitest.eva.guru/user/user-information",
+        { email },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const userData = response.data.Data.user;
+      const storeData = response.data.Data.user.store;
 
-    console.log("responseUserInfo", response);
-    this.context.commit("setUserInfo", response.data);
-    console.log("User information:", response.data);
-  } catch (error) {
-    console.error("Error fetching user information:", error);
+      const marketplace = storeData[0]?.marketplaceName;
+      const sellerId = storeData[0]?.storeId;
+    
+      this.context.commit("setMarketplace", marketplace);
+      this.context.commit("setSellerId", sellerId);
+
+      this.context.commit("setUserInfo", response.data);
+    } catch (error) {
+      console.error("Error fetching user information:", error);
+    }
   }
-}
+ 
 }
