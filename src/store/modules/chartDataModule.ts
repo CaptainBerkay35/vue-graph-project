@@ -12,13 +12,13 @@ export default class ChartDataModule extends VuexModule {
     dailyData: { day: string, dailyProfit: number, totalAmount: number }[] = []; // Günlük veri
 
     @Action
-    async fetchDataForChart({ marketplace, sellerId }: { marketplace: string | null, sellerId: string | null }): Promise<void> {
+    async fetchDataForChart({ marketplace, sellerId, days }: { marketplace: string | null, sellerId: string | null, days: number }): Promise<void> {
         try {
             const response = await axios.post(
                 "https://iapitest.eva.guru/data/daily-sales-overview/",
                 {
                     customDateData: null,
-                    day: 30,
+                    day: days, // Seçilen gün sayısı
                     excludeYoYData: true,
                     marketplace: marketplace,
                     requestStatus: 0,
@@ -32,7 +32,6 @@ export default class ChartDataModule extends VuexModule {
             );
 
             const rawData = response.data.Data.item;
-            console.log('rawData:', rawData);
 
             this.context.commit('setChartData', { rawData });
         } catch (error) {
