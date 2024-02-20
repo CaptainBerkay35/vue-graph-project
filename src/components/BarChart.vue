@@ -19,8 +19,19 @@ export default {
     mounted() {
         this.renderChart();
     },
+    watch: {
+        dailyData: {
+            handler() {
+                this.renderChart();
+            },
+            deep: true
+        }
+    },
     methods: {
         renderChart() {
+            const dayCount = this.dailyData.length; 
+            const fontSize = dayCount > 14 ? '10px' : '14px'; 
+
             Highcharts.chart(this.$refs.chart, {
                 chart: {
                     type: 'column',
@@ -33,6 +44,11 @@ export default {
                     categories: this.dailyData.map(item => item.day),
                     title: {
                         text: 'Days'
+                    },
+                    labels: {
+                        style: {
+                            fontSize: fontSize 
+                        }
                     }
                 },
                 yAxis: {
@@ -50,35 +66,37 @@ export default {
                         grouping: false,
                         dataLabels: {
                             enabled: function () {
-                                // Sadece Total Amount sütunu için data labels aktif olsun
                                 return this.series.name === 'Total Amount';
                             },
                             inside: true,
-                            rotation: -90, // Döndürme
+                            rotation: -90, 
                             crop: false,
                             overflow: 'none',
                             formatter: function () {
-                                // Total amount değerlerini sadece 6 haneli olarak biçimlendir
                                 return Highcharts.numberFormat(this.y, 0, '.', ',').slice(0, 6);
                             }
                         }
                     }
                 },
-
                 series: [{
                     name: 'Daily Profit',
                     data: this.dailyData.map(item => item.dailyProfit),
                     dataLabels: {
-                        enabled: false // Profit değerlerini gösterme
+                        enabled: false 
                     }
                 }, {
                     name: 'Total Amount',
                     data: this.dailyData.map(item => item.totalAmount),
-                    showInLegend: false
-                }]
+                    showInLegend: true, // Lejantı göster
+                    legendIndex: 0 // Sıralama indeksi
+                }],
+                legend: {
+                    align: 'center',
+                    verticalAlign: 'bottom',
+                    layout: 'horizontal'
+                }
             });
         }
     }
 }
 </script>
-  
