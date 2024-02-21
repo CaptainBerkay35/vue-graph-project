@@ -18,7 +18,7 @@ export default class ChartDataModule extends VuexModule {
                 "https://iapitest.eva.guru/data/daily-sales-overview/",
                 {
                     customDateData: null,
-                    day: days, // Seçilen gün sayısı
+                    day: days, 
                     excludeYoYData: true,
                     marketplace: marketplace,
                     requestStatus: 0,
@@ -45,18 +45,15 @@ export default class ChartDataModule extends VuexModule {
         const fbaAmountData = data.rawData.map((item: any) => item.fbaAmount);
         const fbmAmountData = data.rawData.map((item: any) => item.fbmAmount);
 
-        // Calculate total amount for each day
         const totalAmounts = data.rawData.map((item: any) => item.fbaAmount + item.fbmAmount);
-
-        // Create an array to store daily data
+      
         this.dailyData = dailyProfits.map((dailyProfit: any, index: number) => {
             return {
                 day: dailyProfit.day,
                 dailyProfit: dailyProfit.profit,
-                totalAmount: totalAmounts[index] // Total amount for the day
+                totalAmount: totalAmounts[index] 
             };
         });
-        console.log("dailyData", this.dailyData);
     }
     
     get getChartData() {

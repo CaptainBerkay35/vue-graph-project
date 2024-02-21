@@ -1,12 +1,17 @@
 <template>
     <div>
         <div ref="chart"></div>
+        <div v-if="selectedColumns.length > 0">
+            <ComparisonTable/>
+        </div>
     </div>
 </template>
-  
+
 <script>
 import Highcharts from 'highcharts';
 import HighchartsMore from 'highcharts/highcharts-more';
+import ComparisonTable from './InfoTable.vue';
+import { mapState, mapActions,mapGetters } from 'vuex';
 HighchartsMore(Highcharts);
 
 export default {
@@ -16,8 +21,17 @@ export default {
             required: true
         }
     },
+    components: {
+        ComparisonTable
+    },
+    data() {
+        return {
+            selectedColumns: []
+        };
+    },
     mounted() {
         this.renderChart();
+       
     },
     watch: {
         dailyData: {
@@ -25,12 +39,22 @@ export default {
                 this.renderChart();
             },
             deep: true
+        },
+        selectedColumns: {
+            handler(newValue, oldValue) {
+                if (newValue.length !== oldValue.length) {
+                    this.$nextTick(() => {
+                        console.log('Selected columns:', newValue);
+                    });
+                }
+            },
+            deep: true
         }
     },
     methods: {
         renderChart() {
-            const dayCount = this.dailyData.length; 
-            const fontSize = dayCount > 14 ? '10px' : '14px'; 
+            const dayCount = this.dailyData.length;
+            const fontSize = dayCount > 14 ? '10px' : '14px';
 
             Highcharts.chart(this.$refs.chart, {
                 chart: {
@@ -47,7 +71,7 @@ export default {
                     },
                     labels: {
                         style: {
-                            fontSize: fontSize 
+                            fontSize: fontSize
                         }
                     }
                 },
@@ -61,6 +85,14 @@ export default {
                     }
                 },
                 plotOptions: {
+                    series: {
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: this.columnClickHandler
+                            }
+                        }
+                    },
                     column: {
                         stacking: 'normal',
                         grouping: false,
@@ -69,7 +101,7 @@ export default {
                                 return this.series.name === 'Total Amount';
                             },
                             inside: true,
-                            rotation: -90, 
+                            rotation: -90,
                             crop: false,
                             overflow: 'none',
                             formatter: function () {
@@ -82,7 +114,7 @@ export default {
                     name: 'Daily Profit',
                     data: this.dailyData.map(item => item.dailyProfit),
                     dataLabels: {
-                        enabled: false 
+                        enabled: false
                     }
                 }, {
                     name: 'Total Amount',
@@ -95,8 +127,52 @@ export default {
                     verticalAlign: 'bottom',
                     layout: 'horizontal'
                 }
+
             });
+        },
+
+        columnClickHandler(event) {
+            const clickedColumn = event.point.category;
+
+            if (this.selectedColumns.length < 2) {
+                if (this.selectedColumns.includes(clickedColumn)) {
+                    this.selectedColumns = this.selectedColumns.filter(column => column !== clickedColumn);
+                } else {
+                    this.selectedColumns.push(clickedColumn);
+                    this.fetchBarData();
+                }
+            } else {
+                if (this.selectedColumns.includes(clickedColumn)) {
+                    this.selectedColumns = this.selectedColumns.filter(column => column !== clickedColumn);
+                    this.fetchBarData();
+                   
+                } else {
+                    console.log('Maximum selection reached. Deselect a column first.');
+                }
+            }
+        },
+
+        async fetchBarData() {
+            try {
+                let isDaysCompare = this.selectedColumns.length === 2 ? 1 : 0;
+
+                await this.$store.dispatch('barInfo/fetchBarData', {
+                    isDaysCompare: isDaysCompare,
+                    marketplace: this.$store.getters['auth/getMarketplace'],
+                    pageNumber: 1,
+                    pageSize: 30,
+                    salesDate: this.selectedColumns[0],
+                    salesDate2: isDaysCompare === 1 ? this.selectedColumns[1] : '',
+                    sellerId: this.$store.getters['auth/getSellerId']
+                });
+            } catch (error) {
+                console.error('Error fetching bar data:', error);
+            }
         }
-    }
+    },
+    computed: {
+    ...mapGetters('barInfo', ['getBarData']),
+
+  },
 }
 </script>
