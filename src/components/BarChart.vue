@@ -44,7 +44,6 @@ export default {
             handler(newValue, oldValue) {
                 if (newValue.length !== oldValue.length) {
                     this.$nextTick(() => {
-                        console.log('Selected columns:', newValue);
                     });
                 }
             },
@@ -119,8 +118,8 @@ export default {
                 }, {
                     name: 'Total Amount',
                     data: this.dailyData.map(item => item.totalAmount),
-                    showInLegend: true, // Lejantı göster
-                    legendIndex: 0 // Sıralama indeksi
+                    showInLegend: true, 
+                    legendIndex: 0 
                 }],
                 legend: {
                     align: 'center',

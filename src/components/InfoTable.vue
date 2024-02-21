@@ -52,7 +52,6 @@
             : item.productName;
         });
       },
-      // Sayfalama için gerekli hesaplamaları yapıyoruz
       totalPages() {
         return Math.ceil(this.getBarData.skuList.length / 10);
       },
@@ -68,14 +67,10 @@
       };
     },
     methods: {
-      // Sayfa değiştirmek için
       goToPage(pageNumber) {
         this.currentPage = pageNumber;
       }
     },
-    mounted() {
-      console.log('Bar Data:', this.barData);
-    }
   };
   </script>
   

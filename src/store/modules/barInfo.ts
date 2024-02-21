@@ -38,7 +38,6 @@ export default class BarInfoModule extends VuexModule {
                 },
             });
             const barInfo = response.data.Data.item
-            console.log("deneme",barInfo)
             this.context.commit('setBarData', barInfo);
         } catch (error) {
             console.error('Error fetching bar data:', error);
